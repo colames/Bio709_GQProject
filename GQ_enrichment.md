@@ -27,10 +27,10 @@ for line in file:
         title = line[1:]
     else:
         sequence = sequence + line
-sequence = sequence.upper().replace("\n", "").replace("N", "")
+sequence = sequence.upper().replace("\n", "")
 
-GQ_for = re.findall("GGG[ATGC]{1,7}GGG[ATGC]{1,7}GGG[ATGC]{1,7}GGG", sequence)
-GQ_rev = re.findall("CCC[ATGC]{1,7}CCC[ATGC]{1,7}CCC[ATGC]{1,7}CCC", sequence)
+GQ_for = re.findall("GGG[ATGCN]{1,7}GGG[ATGCN]{1,7}GGG[ATGCN]{1,7}GGG", sequence)
+GQ_rev = re.findall("CCC[ATGCN]{1,7}CCC[ATGCN]{1,7}CCC[ATGCN]{1,7}CCC", sequence)
 GQ = GQ_for + GQ_rev
 
 print(len(GQ))

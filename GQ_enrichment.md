@@ -65,7 +65,7 @@ for line in fileinput.input():
         sequence = sequence + line
 
 #chnage all characters to uppercase, remove N's and carriage returns
-sequence = sequence.upper().replace("\n", "").replace("N", "")
+sequence = sequence.upper().replace("\n", "")
 
 #create an object "shuff" that contains the shuffled genome
 shuff = ushuffle.shuffle(sequence, len(sequence), 6)
@@ -74,8 +74,8 @@ shuff = ushuffle.shuffle(sequence, len(sequence), 6)
 count = 1
 while count <= 5:
     shuff = ushuffle.shuffle(shuff, len(shuff), 6)
-    GQ_for = re.findall("GGG[ATCG]{1,7}GGG[ATGC]{1,7}GGG[ATGC]{1,7}GGG", shuff)
-    GQ_rev = re.findall("CCC[ATCG]{1,7}CCC[ATGC]{1,7}CCC[ATGC]{1,7}CCC", shuff)
+    GQ_for = re.findall("GGG[ATCGN]{1,7}GGG[ATGCN]{1,7}GGG[ATGCN]{1,7}GGG", shuff)
+    GQ_rev = re.findall("CCC[ATCGN]{1,7}CCC[ATGCN]{1,7}CCC[ATGCN]{1,7}CCC", shuff)
     GQ = GQ_for + GQ_rev
     print(count, len(GQ))
 #counts the number of GQs found and saves this number of the list "num_GQ"

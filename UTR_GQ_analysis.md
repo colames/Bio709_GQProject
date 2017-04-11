@@ -11,9 +11,9 @@ The script requires as input three files:
 2. Rockhopper output csv file.
 3. Results from GQ search
 
-For the fasta genome file, I removed the title line and stored the sequence in a string variable called <sequence>. I also removed carriage returns with the <Str.replace('\n', '')> function and converted all characters to uppercase with the <Str.upper()> function.
+For the fasta genome file, I removed the title line and stored the sequence in a string variable called `<sequence>`. I also removed carriage returns with the `<Str.replace('\n', '')>` function and converted all characters to uppercase with the `<Str.upper()>` function.
 
-The Rockhopper file that was used as input contains information on transcript boundaries (transcription/translation start/stop sites). My script converts this csv file to a pandas dataframe. The column names can be renamed if needed using the <DataFrame.rename(columns = {'OldName': 'NewName'})> function. You can see the type of variable in each column of the dataframe by using the <print(DataFrame.dtypes)> command. In doing so, I saw that some of the Transcription/Translation Start/Stop positions were being taken as float varialbes and I wanted them to be seen as integers, so I changed them with the <DataFrame[columns].applymap(int64)> command.
+The Rockhopper file that was used as input contains information on transcript boundaries (transcription/translation start/stop sites). My script converts this csv file to a pandas dataframe. The column names can be renamed if needed using the `<DataFrame.rename(columns = {'OldName': 'NewName'})>` function. You can see the type of variable in each column of the dataframe by using the `<print(DataFrame.dtypes)>` command. In doing so, I saw that some of the Transcription/Translation Start/Stop positions were being taken as float varialbes and I wanted them to be seen as integers, so I changed them with the `<DataFrame[columns].applymap(int64)>` command.
 
 The results from the GQ search file contains information on the genomic location, the associated gene, the sequence, and the length of each GQ sequence. It was also imported as pandas dataframe.
 
@@ -50,7 +50,7 @@ GQ_seq[cols2] = GQ_seq[cols2].applymap(np.int64)
 #print(GQ_seq.dtypes)
 ```
 
-After this, I defined all UTRs from the <RNA_seq> data as anything where the transcription start site and translation start site are separated by 1 or more nucleotides and the translation stop and transcription stop were separated by more than 1 nucleotide. I then saved the start and stop of these UTRs as a list in the variable <UTRs>.
+After this, I defined all UTRs from the `<RNA_seq>` data as anything where the transcription start site and translation start site are separated by 1 or more nucleotides and the translation stop and transcription stop were separated by more than 1 nucleotide. I then saved the start and stop of these UTRs as a list in the variable `<UTRs>`.
 
 ```
 ## Defining all UTRs in RNA seq data as a list of genomic positions
@@ -70,7 +70,7 @@ for i, row in RNA_seq.iterrows():
         UTRs.append(UTR)
 ```
 
-Once I had this list of positions of UTRs, I extracted the sequences from the <sequence> variable and saved them as list in <UTR_seq>. There were many empty strings, so I removed these using the <List.remove('')> function.
+Once I had this list of positions of UTRs, I extracted the sequences from the `<sequence>` variable and saved them as list in `<UTR_seq>`. There were many empty strings, so I removed these using the `<List.remove('')>` function.
 
 ```
 ## Getting the UTR sequences by searhcing the object sequence and extracting the ones between positions listed in the UTR list
@@ -82,7 +82,7 @@ for x in UTRs:
 while "" in UTR_seq:
     UTR_seq.remove("")
 ```
-Once I had this list of UTR sequences, I searched for GQs in these sequences with the regular expression <GGG[ATGC]{1,7}GGG[ATGC]{1,7}GGG[ATGC]{1,7}GGG> and its complement. The results from the search were saved as list items in the variable <UTR_GQ>. The total number of GQs found in UTRs was defined as the length of this list.
+Once I had this list of UTR sequences, I searched for GQs in these sequences with the regular expression `<GGG[ATGC]{1,7}GGG[ATGC]{1,7}GGG[ATGC]{1,7}GGG>` and its complement. The results from the search were saved as list items in the variable `<UTR_GQ>`. The total number of GQs found in UTRs was defined as the length of this list.
 
 ```
 ## Searching for GQs in the list of UTR sequences
@@ -98,7 +98,7 @@ for j in UTR_seq:
 print('There are', len(UTR_GQ), 'GQs detected  in UTRs')
 ```
 
-Finally, I wanted to match these hits up to the list of GQs we already have in the pandas dataframe <GQ_seq>. To do this, I first had to convert the <UTR_GQ> object from a list of lists of strings to a list of strings. I did this using the <', '.join()> function in a for loop. I checked the length of the object to make sure it hadn't changed, then used the <DataFrame.isin()> function to find all of the UTR GQ sequences in the list of all GQ sequences. The output was saved to a csv file.
+Finally, I wanted to match these hits up to the list of GQs we already have in the pandas dataframe `<GQ_seq>`. To do this, I first had to convert the `<UTR_GQ>` object from a list of lists of strings to a list of strings. I did this using the `<', '.join()>` function in a for loop. I checked the length of the object to make sure it hadn't changed, then used the `<DataFrame.isin()>` function to find all of the UTR GQ sequences in the list of all GQ sequences. The output was saved to a csv file.
 
 ```
 ## Converts this object from a list of lists to a list of strings

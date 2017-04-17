@@ -109,5 +109,42 @@ UTR_GQ = [', '.join(x) for x in UTR_GQ]
 final = GQ_seq[GQ_seq['Sequence'].isin(UTR_GQ)]
 final.to_csv('/home/gradstd4/UTR_GQ_search_output.csv')
 ```
+An alternate way of doing this analysis is instead of searching for GQs in UTR sequences, UTRs can be defined as a range from the start position of the UTR to the end position of the UTR, and I can use the list of GQ sequences and locations that we already have to find the ones with start sites located within UTRs.
 
+```
+## Makes a list of where all GQs start
+GQ_starts = []
+for j, row in GQ_seq.iterrows():
+    GQ_starts.append(GQ_seq.loc[j, 'Start'])
+
+## Defines the function intersect as a function that returns everything found in two input lists
+def intersect(a, b):
+    return list(set(a) & set(b))
+
+## Finds all GQs that are found in UTRs and creates a list of these and their genomic locations
+UTR_GQs = []
+for x in UTRs:
+    UTR_GQs.append(intersect(x, GQ_starts))
+
+## Removes empty list items
+while [] in UTR_GQs:
+    UTR_GQs.remove([])
+
+## Changes UTR_GQs from a list of lists of integers to a list of integers
+new_UTR_GQs = []
+def my_fun(temp_list):
+    for ele in temp_list:
+        if type(ele) == list:
+            my_fun(ele)
+        else:
+            new_UTR_GQs.append(ele)
+my_fun(UTR_GQs)
+
+## Number of GQs located in UTRs
+print(len(new_UTR_GQs))
+
+## Matches locations of UTR GQs to list of GQs and pulls out information of these and exports it all to a csv file
+final = GQ_seq[GQ_seq['Start'].isin(new_UTR_GQs)]
+final.to_csv('/home/gradstd4/UTR_GQ_search_output.csv')
+```
 

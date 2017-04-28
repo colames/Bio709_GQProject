@@ -22,7 +22,7 @@ gcc -shared ushuffle.o ushufflemodule.o -o ushuffle.so
 
 #### My script
 
-The number of GQ sequences found in the shuffled genome is recorded, and the genome is re-shuffled. This can be repeated as many times as you want by simply changing n in the line: `while count <= n` to the number of times you want to resample. In the end, the program can plot a histogram, or export the data to a csv file for further statiscal analysis. The result is a distribution of the number of GQ sequences found in the shuffled genomes. When I ran this program on the *S. venezuelae* genome with n = 1,000, I got an average of approximately 1,250 GQ sequences (Figure 1) while the actual number in this genome is 2,999. Since the actual number is much higher than the average, we can say that there is some enrichment of GQs in this genome. 
+My script uses the `re.findall()` regular expression search function to find all non-overlapping GQ sequences in the shuffled genome. This fuction comes up with a list of all occurrences of the pattern, so the number of GQ sequences found in the shuffled genome is simply `len(re.findall(pattern))`. The number of GQ sequences found in the shuffled genome is recorded in the list `num_GQ`, and the genome is re-shuffled. This can be repeated as many times as you want by simply changing n in the line: `while count <= n` to the number of times you want to resample. In the end, the program can plot a histogram, or export the data to a csv file for further statiscal analysis. The result is a distribution of the number of GQ sequences found in the shuffled genomes. 
 
 Note, for this to work the file must be in unicode. To change the file from dos to unicode, run the following command:
 
@@ -59,7 +59,7 @@ while count <= n:
     GQ_rev = re.findall("CCC[ATCGN]{1,7}CCC[ATGCN]{1,7}CCC[ATGCN]{1,7}CCC", shuff)
     GQ = GQ_for + GQ_rev
     print(count, len(GQ))
-#counts the number of GQs found and saves this number of the list "num_GQ"
+#counts the number of GQs found and adds this number to the list "num_GQ"
     num_GQ.append(len(GQ))
     count = count + 1
 print(num_GQ)
@@ -89,3 +89,4 @@ plt.savefig("/home/gradstd4/plot.png")
 print("done")
 ```
 
+When I ran this program on the S. venezuelae genome with n = 1,000, I got an average of approximately 1,250 GQ sequences (Figure 1) while the actual number in this genome is 2,999. Since the actual number is much higher than the average, we can say that the is some enrichment of GQs in this genome.

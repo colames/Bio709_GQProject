@@ -92,4 +92,66 @@ print("done")
 When I ran this program on the S. venezuelae genome with n = 1,000, I got an average of approximately 1,250 GQ sequences (Figure 1) while the actual number in this genome is 2,999. Since the actual number is much higher than the average, we can say that the is some enrichment of GQs in this genome.
 
 ![Figure 1](https://cloud.githubusercontent.com/assets/26418440/25544579/117d36de-2c29-11e7-88eb-966155aa0c98.png)
+
 Figure 1: Distribution of nubmer of GQs found in shuffled *S. venezuelae* genome (n = 1,000).
+
+### Question 2: How many GQ sequences are in UTRs?
+
+We know from the GQ search data that we already have that there are ~600 GQ sequences in intergenic regions. However, we don't konw how many of these are in untrasnlated regions (UTRs). We have *in vivo* reporter assays that demonstrate that GQ sequences in these regions can influence gene expression, and we would like to find genes that have GQ sequences in the UTRs so that we can follow up with them experimentally to understand how these sequences might be affecting their associated genes. 
+
+To do this, I first ran RNA-seq data that we already had available through Rockhopper, which gave me information on where the transcription/translation start/stop sites were for all genes that were expressed under our experimental conditions. I then wrote a Python script (included below) that took that csv file as well as the output from our previous GQ search (also a csv file) and converts them to Pandas dataframes. 
+
+```
+#!/usr/local/bin/python3
+import sys, fileinput, re
+import numpy as np
+import pandas as pd
+
+#print(RNA_seq)
+GQ_seq = pd.DataFrame.from_csv("/home/gradstd4/VenezuelaeSVEN.csv", header = 0, sep = ",", index_col=0)
+cols2 = ['Start']
+GQ_seq[cols2] = GQ_seq[cols2].applymap(np.int64)
+#print(GQ_seq)
+#print(GQ_seq.dtypes)
+
+## Defining all UTRs in RNA seq data as ranges from genomic start to stop positions
+UTRs = []
+for i, row in RNA_seq.iterrows():
+    if RNA_seq.loc[i, "Translation Start"] > RNA_seq.loc[i, "Transcription Start"]:
+        UTR = range(RNA_seq.loc[i, "Transcription Start"], RNA_seq.loc[i, "Translation Start"])
+        UTRs.append(UTR)
+    elif RNA_seq.loc[i, "Transcription Start"] > RNA_seq.loc[i, "Translation Start"]:
+        UTR = range(RNA_seq.loc[i, "Translation Start"], RNA_seq.loc[i, "Transcription Start"])
+        UTRs.append(UTR)
+    elif RNA_seq.loc[i, "Transcription Stop"] > RNA_seq.loc[i, "Translation Stop"]:
+        UTR = range(RNA_seq.loc[i, "Translation Stop"], RNA_seq.loc[i, "Transcription Stop"])
+        UTRs.append(UTR)
+    elif RNA_seq.loc[i, "Translation Stop"] > RNA_seq.loc[i, "Transcription Stop"]:
+        UTR = range(RNA_seq.loc[i, "Transcription Stop"], RNA_seq.loc[i, "Translation Stop"])
+        UTRs.append(UTR)
+
+for x in UTRs:
+    UTR_GQs.append(intersect(x, GQ_starts))
+
+## Removes empty values
+while [] in UTR_GQs:
+    UTR_GQs.remove([])
+
+## Flattens UTR_GQs and saves it as new_UTR_GQs so that it is now a list of integers instead of a list of lists of integers
+new_UTR_GQs = []
+def my_fun(temp_list):
+    for ele in temp_list:
+        if type(ele) == list:
+            my_fun(ele)
+        else:
+            new_UTR_GQs.append(ele)
+my_fun(UTR_GQs)
+
+## Prints number of GQs that are found in UTRs
+print(len(new_UTR_GQs))
+
+## Takes values from the list of GQs in UTRs and finds them in the Pandas dataframe, then takes that row from the dataframe and saves it to a new file
+final = GQ_seq[GQ_seq['Start'].isin(new_UTR_GQs)]
+final.to_csv('/home/gradstd4/UTR_GQ_search_output.csv')
+```
+

@@ -107,6 +107,7 @@ import sys, fileinput, re
 import numpy as np
 import pandas as pd
 
+## Importing data from csv files as Pandas dataframes and changing required columns to integer values
 #print(RNA_seq)
 GQ_seq = pd.DataFrame.from_csv("/home/gradstd4/VenezuelaeSVEN.csv", header = 0, sep = ",", index_col=0)
 cols2 = ['Start']
@@ -155,3 +156,139 @@ final = GQ_seq[GQ_seq['Start'].isin(new_UTR_GQs)]
 final.to_csv('/home/gradstd4/UTR_GQ_search_output.csv')
 ```
 
+When I did this, I found 98 GQs in UTRs, which is a manageable list for me to look at manually using RNA-seq data to determine which ones to follow up on experimentally. 
+
+### Question 3: Are GQs enriched in UTRs?
+
+Now that I know that there are 98 GQs in UTRs, I wondered whether this represented an enrichment in these regions. To address this question, I combined my scripts from the first two questions (above) to write a new Python script to do this.
+
+I started by using the same method as before to define all UTRs, only this time I saved this list as a Python object so that I could import it into another script. 
+
+```
+#!/usr/local/bin/python3
+import sys, fileinput, re
+import numpy as np
+import pandas as pd
+import csv
+
+## Importing data from RNA seq and GQ searching as pandas dataframes, and changing variables to the correct type
+RNA_seq = pd.DataFrame.from_csv("/home/gradstd4/RNA_seq_Rockhopper_Results.csv", header = 0, sep = ",", index_col=0)
+RNA_seq = pd.DataFrame.dropna(RNA_seq)
+cols = ['Transcription Start', 'Translation Start', 'Translation Stop', 'Transcription Stop']
+RNA_seq[cols] = RNA_seq[cols].applymap(np.int64)
+
+## Defining all UTRs in RNA seq data as a list of genomic positions
+UTRs = []
+for i, row in RNA_seq.iterrows():
+    if RNA_seq.loc[i, "Translation Start"] > RNA_seq.loc[i, "Transcription Start"]:
+        UTR = list(range(RNA_seq.loc[i, "Transcription Start"], RNA_seq.loc[i, "Translation Start"]))
+        UTRs.append(UTR)
+    elif RNA_seq.loc[i, "Transcription Start"] > RNA_seq.loc[i, "Translation Start"]:
+        UTR = list(range(RNA_seq.loc[i, "Translation Start"], RNA_seq.loc[i, "Transcription Start"]))
+        UTRs.append(UTR)
+    elif RNA_seq.loc[i, "Transcription Stop"] > RNA_seq.loc[i, "Translation Stop"]:
+        UTR = list(range(RNA_seq.loc[i, "Translation Stop"], RNA_seq.loc[i, "Transcription Stop"]))
+        UTRs.append(UTR)
+    elif RNA_seq.loc[i, "Translation Stop"] > RNA_seq.loc[i, "Transcription Stop"]:
+        UTR = list(range(RNA_seq.loc[i, "Transcription Stop"], RNA_seq.loc[i, "Translation Stop"]))
+        UTRs.append(UTR)
+flat_UTRs = []
+for x in UTRs:
+    for y in x:
+        flat_UTRs.append(y)
+#print(flat_UTRs)
+
+#np.savetxt('UTR_list.txt', UTRs, delimiter = ',', fmt = '%s')
+with open('UTRs.py', 'w') as f:
+    f.write('UTRs = %s' % UTRs)
+```
+
+I then wrote a separate script that shuffles the genome and looks for GQs using the `re.finditer()` function, which searches for all non-overlapping matches and returns their positions within the string. Using these positions and the UTR positions (imported from Python object created above), I was able to determine the number of GQs in these same regions in the shuffled genome. The number of re-samplings can be easily varried in the same way as in my code from question 1.
+
+```
+#!/usr/bin/python
+
+import sys, fileinput, re, ushuffle, csv
+import numpy as np
+
+sequence = ""
+file = fileinput.input()
+
+UTR_list = []
+from UTRs import UTRs as UTR_list
+#print(UTR_list)
+
+## Removing title from fasta genome file, transforming to uppercase characters, and removing carriage returns
+for line in file:
+    if line[0] == ">":
+        title = line[1:]
+    else:
+        sequence = sequence + line
+sequence = sequence.upper().replace("\n", "")
+
+shuff = ushuffle.shuffle(sequence, len(sequence), 6)
+
+## Defines intersect as a function that takes two lists and returns items that are found in both lists
+def intersect(a, b):
+    return list(set(a) & set(b))
+
+p1 = re.compile("GGG[ATGCN]{1,7}GGG[ATGCN]{1,7}GGG[ATGCN]{1,7}GGG")
+p2 = re.compile("CCC[ATGCN]{1,7}CCC[ATGCN]{1,7}CCC[ATGCN]{1,7}CCC")
+
+## Flattens the list from a list of lists of integers to a list of integers
+def my_fun(temp_list):
+    for ele in temp_list:
+        if type(ele) == list:
+            my_fun(ele)
+        else:
+            new_UTR_GQs.append(ele)
+
+## Shuffling the genome, then searching for GQs and determining how many are in UTRs by comparing their start positions to the list of UTR positions
+num_GQ = []
+count = 1
+while count <= n:
+    shuff = ushuffle.shuffle(shuff, len(shuff), 6)
+    GQs = []
+    UTR_GQs = []
+    for m in p1.finditer(shuff):
+        GQs.append(int(m.start()))
+    for m in p2.finditer(shuff):
+        GQs.append(int(m.start()))
+    for x in UTR_list:
+        UTR_GQs.append(intersect(x, GQs))
+    while [] in UTR_GQs:
+        UTR_GQs.remove([])
+    new_UTR_GQs = []
+    my_fun(UTR_GQs)
+    print(len(new_UTR_GQs))
+    num_GQ.append(len(new_UTR_GQs))
+    count = count + 1
+
+#print(num_GQ)
+
+## Saves number of GQs found in UTRs as a csv file
+with open('shuffled_UTR_search.csv', 'w') as output:
+    writer = csv.writer(output, lineterminator = '\n')
+    for val in num_GQ:
+        writer.writerow([val])
+
+#plotting histogram of the nubmer of GQs found
+import matplotlib
+
+#required to force matplotlib to not use any Xwindows backend
+matplotlib.use("Agg")
+
+import matplotlib.pyplot as plt
+
+plt.hist(num_GQ)
+
+plt.xlabel('number of GQs')
+plt.ylabel('count')
+plt.title('Histogram of GQs')
+plt.grid(True)
+plt.savefig("/home/gradstd4/plot.png")
+```
+
+When I chnaged the number of genome shuffles to 1,000, I got the following distribution with a mean around 20 GQs (Figure 2). This is much lower than the actual number of GQs found in UTRs (98), indicating that there is some enrichemtn of GQs in UTRs.
+
+![Figure 2](https://cloud.githubusercontent.com/assets/26418440/25546064/6375095c-2c2f-11e7-8af6-10cdad923315.png)

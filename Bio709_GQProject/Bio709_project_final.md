@@ -11,7 +11,26 @@ G-quadruplexes (GQs) are nucleic acid secondary structures that form in G-rich s
 
 ### Question 1: Are GQs enriched in *Streptomyces* genomes?
 
-To address this question, I wrote a Python script that shuffles an input fasta sequence using the program uShuffle, and searches for GQ sequences in the shuffled genome. The number of GQ sequences found in the shuffled genome is recorded, and the genome is re-shuffled. This can be repeated as many times as you want by simply changing n in the line: `while count < n` to the number of times you want to resample. In the end, the program can plot a histogram, or export the data to a csv file for further statiscal analysis. The result is a distribution of the number of GQ sequences found in the shuffled genomes. When I ran this program on the *S. venezuelae* genome with n = 1,000, I got an average of approximately 1,250 GQ sequences (Figure 1) while the actual number in this genome is 2,999. Since the actual number is much higher than the average, we can say that there is some enrichment of GQs in this genome. 
+To address this question, I wrote a Python script (icnluded below) that shuffles an input fasta sequence using the program [uShuffle](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-9-192), and searches for GQ sequences in the shuffled genome. uShuffle is a program for shuffling biological data that allows you to conserve nucleotide frequencies by only shuffling the genome in blocks of length *k*. A wrapper module for using uShuffle in Python can be written by following the instructions found [here](http://digital.cs.usu.edu/~mjiang/ushuffle/python.html).
+
+For building the module, instead of their commands enter:
+
+```
+gcc -c -I/usr/include/python2.6 -fPIC ushuffle.c ushufflemodule.c
+gcc -shared ushuffle.o ushufflemodule.o -o ushuffle.so
+```
+
+#### My script
+
+The number of GQ sequences found in the shuffled genome is recorded, and the genome is re-shuffled. This can be repeated as many times as you want by simply changing n in the line: `while count <= n` to the number of times you want to resample. In the end, the program can plot a histogram, or export the data to a csv file for further statiscal analysis. The result is a distribution of the number of GQ sequences found in the shuffled genomes. When I ran this program on the *S. venezuelae* genome with n = 1,000, I got an average of approximately 1,250 GQ sequences (Figure 1) while the actual number in this genome is 2,999. Since the actual number is much higher than the average, we can say that there is some enrichment of GQs in this genome. 
+
+Note, for this to work the file must be in unicode. To change the file from dos to unicode, run the following command:
+
+```
+dos2unix <filename>
+```
+
+This will save over the existing file in the right format.
 
 ```
 #!/usr/bin/python
@@ -34,7 +53,7 @@ shuff = ushuffle.shuffle(sequence, len(sequence), 6)
 
 #re-shuffle the shuffled sequence and search for GQs each time
 count = 1
-while count <= 5:
+while count <= n:
     shuff = ushuffle.shuffle(shuff, len(shuff), 6)
     GQ_for = re.findall("GGG[ATCGN]{1,7}GGG[ATGCN]{1,7}GGG[ATGCN]{1,7}GGG", shuff)
     GQ_rev = re.findall("CCC[ATCGN]{1,7}CCC[ATGCN]{1,7}CCC[ATGCN]{1,7}CCC", shuff)
@@ -46,7 +65,7 @@ while count <= 5:
 print(num_GQ)
 
 #writes data to csv file
-with open('shuffled_UTR_search.csv', 'w') as output:
+with open('shuffled_GQ_search.csv', 'w') as output:
     writer = csv.writer(output, lineterminator = '\n')
     for val in num_GQ:
         writer.writerow([val])

@@ -93,7 +93,7 @@ When I ran this program on the S. venezuelae genome with n = 1,000, I got an ave
 
 ![Figure 1](https://cloud.githubusercontent.com/assets/26418440/25544579/117d36de-2c29-11e7-88eb-966155aa0c98.png)
 
-Figure 1: Distribution of nubmer of GQs found in shuffled *S. venezuelae* genome (n = 1,000).
+**Figure 1:** Distribution of nubmer of GQs found in shuffled *S. venezuelae* genome (n = 1,000).
 
 ### Question 2: How many GQ sequences are in UTRs?
 
@@ -292,3 +292,5 @@ plt.savefig("/home/gradstd4/plot.png")
 When I chnaged the number of genome shuffles to 1,000, I got the following distribution with a mean around 20 GQs (Figure 2). This is much lower than the actual number of GQs found in UTRs (98), indicating that there is some enrichemtn of GQs in UTRs.
 
 ![Figure 2](https://cloud.githubusercontent.com/assets/26418440/25546064/6375095c-2c2f-11e7-8af6-10cdad923315.png)
+
+**Figure 2:** Distribution of the number of GQs found in regions that were defined as UTRs in the actual *S. venezuelae* genome, n = 1,000.

@@ -91,4 +91,4 @@ print("done")
 
 When I ran this program on the S. venezuelae genome with n = 1,000, I got an average of approximately 1,250 GQ sequences (Figure 1) while the actual number in this genome is 2,999. Since the actual number is much higher than the average, we can say that the is some enrichment of GQs in this genome.
 
-![Figure 1](https://github.com/colames/Bio709_GQProject/wiki)
+![Figure 1](https://cloud.githubusercontent.com/assets/26418440/25544579/117d36de-2c29-11e7-88eb-966155aa0c98.png)

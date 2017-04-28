@@ -293,4 +293,4 @@ When I chnaged the number of genome shuffles to 1,000, I got the following distr
 
 ![Figure 2](https://cloud.githubusercontent.com/assets/26418440/25546064/6375095c-2c2f-11e7-8af6-10cdad923315.png)
 
-**Figure 2:** Distribution of the number of GQs found in regions that were defined as UTRs in the actual *S. venezuelae* genome, n = 1,000.
+**Figure 2:** Distribution of the number of GQs found in regions that were defined as UTRs in the actual *S. venezuelae* genome (n = 1,000).

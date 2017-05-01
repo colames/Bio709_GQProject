@@ -2,7 +2,7 @@
 
 ## Introduction
 
-G-quadruplexes (GQs) are nucleic acid secondary structures that form in G-rich sequences. To form, they require 4 G-tracts of 3-6 G's separated by no more than 7 nucleotides each. The goal of my research project is to uncover the regulatory roles of these structures in *Streptomyces*. We are interested in studying GQs in *Streptomyces* because they are extremely GC-rich organisms (>70%), and they likely have many GQ-forming sequences in their genomes, but nothing is known about how these might affect the expression of the associated gene. We have already searched the genomes of several *Streptomcyes* species and found ~2,500 of them in each species. For this project, I have three main research questions:
+G-quadruplexes (GQs) are nucleic acid secondary structures that form in G-rich sequences. To form, they require 4 G-tracts of 3-6 G's separated by no more than 7 nucleotides each. The goal of my research project is to uncover the regulatory roles of these structures in *Streptomyces*. We are interested in studying GQs in *Streptomyces* becasue their extremely GC-rich genomes (>70%) means that they likely have many sequences with the potential to form GQs, yet nothing is known about how these structures might affect gene expression in these organisms. We have already searched the genomes of several *Streptomcyes* species and found ~2,500 of them in each species. For this project, I have three main research questions:
 1. Is the actual number of GQ sequences found greater than what we would expect to find by chance given the G-C content of *Streptomyces* genomes?
 2. How many of the GQ sequences that we've identified are found in UTRs?
 3. Is the number of GQ sequences in UTRs greater than the number we would expect to find by chance in these regions?
@@ -11,7 +11,7 @@ G-quadruplexes (GQs) are nucleic acid secondary structures that form in G-rich s
 
 ### Question 1: Are GQs enriched in *Streptomyces* genomes?
 
-To address this question, I wrote a Python script (icnluded below) that shuffles an input fasta sequence using the program [uShuffle](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-9-192), and searches for GQ sequences in the shuffled genome. uShuffle is a program for shuffling biological data that allows you to conserve nucleotide frequencies by only shuffling the genome in blocks of length *k*. A wrapper module for using uShuffle in Python can be written by following the instructions found [here](http://digital.cs.usu.edu/~mjiang/ushuffle/python.html).
+To address this question, I wrote a Python script (icnluded below) that shuffles an input fasta sequence using the program [uShuffle](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-9-192), and searches for GQ sequences in the shuffled genome. uShuffle is a program for shuffling biological data that allows you to conserve doublet/triplet frequencies by only shuffling the genome in blocks of length *k*. A wrapper module for using uShuffle in Python can be written by following the instructions found [here](http://digital.cs.usu.edu/~mjiang/ushuffle/python.html).
 
 For building the module, instead of their commands enter:
 
@@ -45,10 +45,10 @@ for line in fileinput.input():
     else:
         sequence = sequence + line
 
-#chnage all characters to uppercase, remove N's and carriage returns
+#chnage all characters to uppercase and remove carriage returns
 sequence = sequence.upper().replace("\n", "")
 
-#create an object "shuff" that contains the shuffled genome
+#create an object "shuff" that contains the shuffled genome. I used k-let size of 6 to try to conserve codon usage to some extent.
 shuff = ushuffle.shuffle(sequence, len(sequence), 6)
 
 #re-shuffle the shuffled sequence and search for GQs each time
@@ -58,11 +58,10 @@ while count <= n:
     GQ_for = re.findall("GGG[ATCGN]{1,7}GGG[ATGCN]{1,7}GGG[ATGCN]{1,7}GGG", shuff)
     GQ_rev = re.findall("CCC[ATCGN]{1,7}CCC[ATGCN]{1,7}CCC[ATGCN]{1,7}CCC", shuff)
     GQ = GQ_for + GQ_rev
-    print(count, len(GQ))
+    print(len(GQ))
 #counts the number of GQs found and adds this number to the list "num_GQ"
     num_GQ.append(len(GQ))
     count = count + 1
-print(num_GQ)
 
 #writes data to csv file
 with open('shuffled_GQ_search.csv', 'w') as output:
@@ -84,12 +83,12 @@ plt.xlabel('number of GQs')
 plt.ylabel('count')
 plt.title('Histogram of GQs')
 plt.grid(True)
-plt.savefig("/home/gradstd4/plot.png")
+plt.savefig(<filename>)
 
 print("done")
 ```
 
-When I ran this program on the S. venezuelae genome with n = 1,000, I got an average of approximately 1,250 GQ sequences (Figure 1) while the actual number in this genome is 2,999. Since the actual number is much higher than the average, we can say that the is some enrichment of GQs in this genome.
+When I ran this program on the *S. venezuelae* genome with n = 1,000, I got an average of approximately 1,250 GQ sequences (Figure 1) while the actual number in this genome is 2,999. Since the actual number is much higher than the average, we can say that the is some enrichment of GQs in this genome.
 
 ![Figure 1](https://cloud.githubusercontent.com/assets/26418440/25544579/117d36de-2c29-11e7-88eb-966155aa0c98.png)
 
@@ -97,9 +96,9 @@ When I ran this program on the S. venezuelae genome with n = 1,000, I got an ave
 
 ### Question 2: How many GQ sequences are in UTRs?
 
-We know from the GQ search data that we already have that there are ~600 GQ sequences in intergenic regions. However, we don't konw how many of these are in untrasnlated regions (UTRs). We have *in vivo* reporter assays that demonstrate that GQ sequences in these regions can influence gene expression, and we would like to find genes that have GQ sequences in the UTRs so that we can follow up with them experimentally to understand how these sequences might be affecting their associated genes. 
+We know from the GQ search data that we already have that there are ~600 GQ sequences in intergenic regions. However, we don't konw how many of these are in the untrasnlated regions (UTRs) of transcribed genes. We have *in vivo* reporter assays that demonstrate that GQ sequences in these regions can influence gene expression, and we would like to find genes that have GQ sequences in the UTRs so that we can follow up with them experimentally to understand how these sequences might be affecting the expression of their associated genes. 
 
-To do this, I first ran RNA-seq data that we already had available through Rockhopper, which gave me information on where the transcription/translation start/stop sites were for all genes that were expressed under our experimental conditions. I then wrote a Python script (included below) that took that csv file as well as the output from our previous GQ search (also a csv file) and converts them to Pandas dataframes. 
+To do this, I first ran RNA-seq data from our lab through Rockhopper, which gave me information on predicted transcription/translation start/stop sites were for all genes that were expressed under our experimental conditions. I then wrote a Python script (included below) that took the Rockhopper output (a csv file) as well as the output from our previous GQ search (also a csv file) and converts them to Pandas dataframes. Once the data was in this format, I was able to define UTRs as ranges from transcription starts to translation starts and translation stops to transcription stops. Once I had defined UTRs in this way, I could find all GQs that start in UTRs by using the intersect function to return values that were found in both the list of UTRs and the list of GQ locations. I could then search for these values in the full dataset to return information on these GQ sequences. 
 
 ```
 #!/usr/local/bin/python3
@@ -131,6 +130,16 @@ for i, row in RNA_seq.iterrows():
         UTR = range(RNA_seq.loc[i, "Transcription Stop"], RNA_seq.loc[i, "Translation Stop"])
         UTRs.append(UTR)
 
+## Creates a list of all GQ start positions form the Pandas dataframe
+GQ_starts = []
+for j, row in GQ_seq.iterrows():
+    GQ_starts.append(GQ_seq.loc[j, 'Start'])
+
+## Defines intersect as a function that takes two lists and returns values that are found in both lists
+def intersect(a, b):
+    return list(set(a) & set(b))
+
+## Finds all GQs that start in UTRs
 for x in UTRs:
     UTR_GQs.append(intersect(x, GQ_starts))
 
@@ -160,7 +169,7 @@ When I did this, I found 98 GQs in UTRs, which is a manageable list for me to lo
 
 ### Question 3: Are GQs enriched in UTRs?
 
-Now that I know that there are 98 GQs in UTRs, I wondered whether this represented an enrichment in these regions. To address this question, I combined my scripts from the first two questions (above) to write a new Python script to do this.
+Now that I know that there are 98 GQs in UTRs, I wondered whether this represented an enrichment in these regions. To address this question, I combined my scripts from the first two questions (above) to shuffle the genome and search for GQs in the shuffled genome, but only in the regions that are defined as UTRs in the actual genome.
 
 I started by using the same method as before to define all UTRs, only this time I saved this list as a Python object so that I could import it into another script. 
 
@@ -198,7 +207,6 @@ for x in UTRs:
         flat_UTRs.append(y)
 #print(flat_UTRs)
 
-#np.savetxt('UTR_list.txt', UTRs, delimiter = ',', fmt = '%s')
 with open('UTRs.py', 'w') as f:
     f.write('UTRs = %s' % UTRs)
 ```
@@ -286,11 +294,15 @@ plt.xlabel('number of GQs')
 plt.ylabel('count')
 plt.title('Histogram of GQs')
 plt.grid(True)
-plt.savefig("/home/gradstd4/plot.png")
+plt.savefig(<filename>)
 ```
 
-When I chnaged the number of genome shuffles to 1,000, I got the following distribution with a mean around 20 GQs (Figure 2). This is much lower than the actual number of GQs found in UTRs (98), indicating that there is some enrichemtn of GQs in UTRs.
+When I chnaged the number of genome shuffles to 1,000, I got the following distribution with a mean around 20 GQs (Figure 2). This is much lower than the actual number of GQs found in UTRs (98), indicating that there is some enrichment of GQs in UTRs.
 
 ![Figure 2](https://cloud.githubusercontent.com/assets/26418440/25546064/6375095c-2c2f-11e7-8af6-10cdad923315.png)
 
 **Figure 2:** Distribution of the number of GQs found in regions that were defined as UTRs in the actual *S. venezuelae* genome (n = 1,000).
+
+## Conclusions and future directions
+
+The findings from this project were important because they helped validate *Streptomcyes* as a model organism for studying GQs since they appear to be enriched in these species despite having such high G-C content. We also now have a list of GQ sequences in UTRs that we will be able to follow up on experimentally in oder to establish a role for these strucutres in gene regulation. We also showed that there are more of these sequences in UTRs than we did with our random shuffling approach, which means that many of the ones that are found there likely serve some regulatory funciton. Moving forward, I would like to broaden our study of GQ sequences to include ones that are found within coding regions. This is where most of them were found (~80%), so I am interested in how these sequences might affect gene expression at the translational level. 

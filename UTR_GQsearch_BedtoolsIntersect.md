@@ -50,7 +50,7 @@ for(x in 1:nrow(newUTRs)){
 write.csv(plus_UTRs, file = "plus_UTRs.csv",row.names=FALSE)
 write.csv(neg_UTRs, file = "neg_UTRs.csv",row.names=FALSE)
 ```
-2. Creating a list of all GQs, their genomic postions, and their strand
+# 2. Creating a list of all GQs, their genomic postions, and their strand
 
 Used the re.finditer() function to find all non-overlapping instances of the search pattern, and to extract information about them. This information was stored in a csv file that could later be manipulated. 
 ```
